@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Emergency Web — CCCE Social Engineering Training</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet"/>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          red:    '#ef4444',
+          'red-d':'#b91c1c',
+          cyber:  '#22d3ee',
+          yellow: '#facc15',
+          navy:   '#0c1a35',
+          'navy-m':'#162040',
+          ink:    '#0a0f1e',
+        },
+        fontFamily: {
+          mono:    ['"IBM Plex Mono"', 'monospace'],
+          sans:    ['"Plus Jakarta Sans"', 'sans-serif'],
+          display: ['"Instrument Serif"', 'serif'],
+        },
+      }
+    }
+  }
+</script>
+<style>
+/* ── Reset ── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:#fff;color:#0a0f1e;font-family:'Plus Jakarta Sans',sans-serif;overflow-x:hidden}
+::selection{background:#ef4444;color:#fff}
+
+/* ── CSS vars ── */
+:root{
+  --red:#ef4444;--cyber:#22d3ee;--yellow:#facc15;
+  --navy:#0c1a35;--ink:#0a0f1e;
+}
+
+/* ═══════════ NAV ═══════════ */
+#site-nav{
+  position:fixed;top:0;left:0;right:0;z-index:9000;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 36px;height:68px;
+  background:rgba(255,255,255,0.82);
+  backdrop-filter:blur(24px) saturate(180%);
+  -webkit-backdrop-filter:blur(24px) saturate(180%);
+  border-bottom:1px solid rgba(12,26,53,0.08);
+  transition:box-shadow .3s;
+}
+#site-nav.scrolled{box-shadow:0 4px 40px rgba(12,26,53,.1)}
+
+.logo-img{
+  width:36px;height:36px;border-radius:8px;
+  object-fit:contain;flex-shrink:0;
+  /* placeholder box if no image */
+  background:linear-gradient(135deg,var(--navy),#1e3a7c);
+  display:flex;align-items:center;justify-content:center;
+}
+.logo-slot{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo-text{font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;font-weight:800;letter-spacing:-.02em;line-height:1}
+.logo-text .red{color:var(--red)}
+.logo-text .yellow{color:var(--yellow)}
+.logo-sub{font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:#94a3b8;margin-top:2px}
+
+/* Hamburger */
+.ham-btn{
+  width:44px;height:44px;border-radius:10px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  background:transparent;border:1.5px solid var(--navy);cursor:pointer;
+  transition:all .25s;
+}
+.ham-btn:hover{background:var(--navy)}
+.ham-btn:hover .ham-line{background:#fff}
+.ham-line{width:20px;height:1.5px;background:var(--navy);border-radius:2px;transition:all .35s cubic-bezier(.4,0,.2,1)}
+.ham-btn.open .ham-line:nth-child(1){transform:translateY(6.5px) rotate(45deg)}
+.ham-btn.open .ham-line:nth-child(2){opacity:0;transform:scaleX(0)}
+.ham-btn.open .ham-line:nth-child(3){transform:translateY(-6.5px) rotate(-45deg)}
+
+/* Nav overlay */
+#nav-menu{
+  position:fixed;inset:0;z-index:8900;background:var(--ink);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+  opacity:0;visibility:hidden;transition:all .45s cubic-bezier(.4,0,.2,1);
+}
+#nav-menu.open{opacity:1;visibility:visible}
+.nav-item{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:clamp(26px,5.5vw,48px);font-weight:800;
+  color:rgba(255,255,255,.2);text-decoration:none;letter-spacing:-.03em;
+  transition:color .2s,transform .2s;
+  transform:translateY(20px);opacity:0;
+}
+#nav-menu.open .nav-item{opacity:1;transform:translateY(0);transition:all .4s cubic-bezier(.16,1,.3,1)}
+#nav-menu.open .nav-item:nth-child(1){transition-delay:.05s}
+#nav-menu.open .nav-item:nth-child(2){transition-delay:.1s}
+#nav-menu.open .nav-item:nth-child(3){transition-delay:.15s}
+#nav-menu.open .nav-item:nth-child(4){transition-delay:.2s}
+#nav-menu.open .nav-item:nth-child(5){transition-delay:.25s}
+#nav-menu.open .nav-item:nth-child(6){transition-delay:.3s}
+.nav-item:hover{color:#fff;transform:translateX(6px)!important}
+.nav-item.hi:hover{color:var(--cyber)}
+.nav-phone{
+  margin-top:28px;font-family:'IBM Plex Mono',monospace;
+  font-size:13px;color:rgba(255,255,255,.3);letter-spacing:.12em;
+  transition-delay:.35s!important;opacity:0;transform:translateY(20px);
+}
+#nav-menu.open .nav-phone{opacity:1;transform:translateY(0);transition:all .4s .35s cubic-bezier(.16,1,.3,1)}
+
+/* ═══════════ HERO ═══════════ */
+#hero{
+  height:100vh;width:100%;background:#fff;
+  overflow:hidden;position:relative;
+  display:flex;justify-content:center;align-items:center;
+  perspective:1500px;
+}
+
+/* 3D environment */
+.hero-env{
+  position:absolute;width:200%;height:200%;
+  transform:rotateX(60deg);pointer-events:none;
+  mask-image:radial-gradient(circle,black 0%,transparent 62%);
+  -webkit-mask-image:radial-gradient(circle,black 0%,transparent 62%);
+  transition:transform .08s linear;
+}
+.hero-grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(var(--cyber) 1px,transparent 1px),
+    linear-gradient(90deg,var(--cyber) 1px,transparent 1px);
+  background-size:64px 64px;
+  filter:drop-shadow(0 0 6px var(--cyber));
+  opacity:.22;
+}
+.hero-pcb{
+  position:absolute;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg width='200' height='200' viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23facc15' stroke-width='2' opacity='0.5'%3E%3Cpath d='M0 100 h40 l20 -20 h80 l20 20 h40'/%3E%3Cpath d='M100 0 v60 l-20 20 v120'/%3E%3Ccircle cx='40' cy='100' r='3.5' fill='%23facc15'/%3E%3Ccircle cx='100' cy='80' r='3.5' fill='%23facc15'/%3E%3Ccircle cx='160' cy='100' r='3.5' fill='%23facc15'/%3E%3C/g%3E%3C/svg%3E");
+  background-size:360px 360px;
+  animation:pcb-glow 4s infinite alternate;
+}
+@keyframes pcb-glow{
+  from{opacity:.2;filter:brightness(1)}
+  to{opacity:.6;filter:brightness(1.6) drop-shadow(0 0 8px var(--yellow))}
+}
+
+/* ── ELECTRICITY ON GRID LINES ── */
+.grid-spark{
+  position:absolute;pointer-events:none;
+  border-radius:50%;
+  background:var(--cyan,var(--cyber));
+  box-shadow:0 0 6px 2px var(--cyan,var(--cyber));
+  width:5px;height:5px;
+  opacity:0;
+  animation:spark-travel var(--sd,4s) var(--sdelay,0s) linear infinite;
+}
+@keyframes spark-travel{
+  0%{left:var(--sx,0%);top:var(--sy,0%);opacity:0}
+  5%{opacity:1}
+  95%{opacity:1}
+  100%{left:var(--ex,100%);top:var(--ey,0%);opacity:0}
+}
+
+/* ── HERO CONTENT ── */
+.hero-content{position:relative;z-index:10;text-align:center;padding:0 24px;max-width:900px}
+
+.hero-alert{
+  display:inline-flex;align-items:center;gap:8px;
+  border:1px solid rgba(239,68,68,.25);
+  background:rgba(239,68,68,.06);
+  border-radius:100px;padding:7px 18px;margin-bottom:22px;
+  font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;
+  color:var(--red);letter-spacing:.05em;
+  opacity:0;animation:fade-in .6s .05s forwards;
+}
+.alert-dot{width:6px;height:6px;border-radius:50%;background:var(--red);animation:blink 1.4s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+
+.hero-eyebrow{
+  font-family:'IBM Plex Mono',monospace;font-size:10px;
+  letter-spacing:.3em;text-transform:uppercase;color:#64748b;
+  margin-bottom:24px;opacity:0;transform:translateY(16px);
+  animation:fade-up .7s .2s cubic-bezier(.16,1,.3,1) forwards;
+}
+.hero-title{display:flex;flex-direction:column;align-items:center;gap:2px;margin-bottom:24px}
+.hw{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:clamp(58px,13vw,124px);font-weight:800;
+  color:var(--ink);line-height:.9;letter-spacing:-.05em;
+  position:relative;
+  opacity:0;transform:translateX(-70px) skewX(-6deg);
+  animation:word-in .9s cubic-bezier(.16,1,.3,1) forwards;
+}
+.hw:nth-child(1){animation-delay:.1s}
+.hw:nth-child(2){animation-delay:.22s;color:var(--red)}
+.hw:nth-child(3){animation-delay:.34s}
+.hw::after{
+  content:attr(data-g);position:absolute;inset:0;
+  color:var(--red);z-index:-1;opacity:0;
+  animation:glitch 5.5s linear infinite;
+}
+.hw:nth-child(2)::after{animation-delay:2s}
+@keyframes glitch{
+  0%,87%,100%{opacity:0;transform:translate(0)}
+  89%{opacity:.65;transform:translate(7px,-4px);clip-path:inset(12% 0 62% 0)}
+  91%{opacity:.65;transform:translate(-7px,4px);clip-path:inset(52% 0 12% 0)}
+  93%{opacity:.65;transform:translate(2px,-7px);clip-path:inset(32% 0 32% 0)}
+}
+@keyframes word-in{to{opacity:1;transform:translateX(0) skewX(0deg)}}
+
+.hero-sub{
+  font-size:clamp(15px,2vw,18px);color:#475569;line-height:1.7;
+  max-width:560px;margin:0 auto 36px;
+  opacity:0;transform:translateX(40px);
+  animation:fade-up .8s .68s cubic-bezier(.16,1,.3,1) forwards;
+}
+.hero-cta{
+  display:flex;justify-content:center;gap:12px;flex-wrap:wrap;
+  opacity:0;transform:translateY(24px);
+  animation:fade-up .8s .9s cubic-bezier(.16,1,.3,1) forwards;
+}
+@keyframes fade-up{to{opacity:1;transform:translate(0)}}
+@keyframes fade-in{to{opacity:1}}
+
+/* Buttons */
+.btn-solid{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:14px 32px;background:var(--ink);color:#fff;
+  font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;text-decoration:none;
+  border:none;cursor:pointer;
+  clip-path:polygon(10% 0,100% 0,90% 100%,0 100%);
+  transition:all .3s;
+}
+.btn-solid:hover{background:var(--red);box-shadow:0 0 32px rgba(239,68,68,.4)}
+.btn-ghost{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:14px 32px;background:transparent;color:var(--ink);
+  font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;text-decoration:none;
+  border:1.5px solid var(--ink);cursor:pointer;
+  clip-path:polygon(10% 0,100% 0,90% 100%,0 100%);
+  transition:all .3s;
+}
+.btn-ghost:hover{border-color:var(--red);color:var(--red)}
+
+/* ═══════════ ELECTRIC DIVIDER ═══════════ */
+.e-div{
+  width:100%;height:2px;position:relative;overflow:hidden;
+  background:linear-gradient(90deg,transparent,var(--red),var(--cyber),var(--yellow),transparent);
+}
+.e-div::after{
+  content:'';position:absolute;
+  width:80px;height:100%;
+  background:linear-gradient(90deg,transparent,#fff,transparent);
+  animation:sweep 2.5s linear infinite;
+}
+@keyframes sweep{from{left:-80px}to{left:100%}}
+
+/* ═══════════ STATS ═══════════ */
+#stats{padding:0;overflow:hidden}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr)}
+@media(max-width:768px){.stats-row{grid-template-columns:repeat(2,1fr)}}
+.stat-cell{
+  padding:52px 36px;border-right:1px solid rgba(255,255,255,.06);
+  background:var(--navy);position:relative;overflow:hidden;
+}
+.stat-cell:last-child{border-right:none}
+.stat-cell::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(34,211,238,.05) 0%,transparent 60%);
+  opacity:0;transition:opacity .4s;
+}
+.stat-cell:hover::before{opacity:1}
+.stat-n{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:clamp(36px,4.5vw,52px);font-weight:800;
+  color:#fff;letter-spacing:-.04em;line-height:1;margin-bottom:8px;
+}
+.stat-n .u{font-size:.55em;color:var(--red)}
+.stat-l{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.35)}
+.stat-s{font-size:10px;color:rgba(255,255,255,.18);margin-top:6px;font-style:italic}
+
+/* ═══════════ SECTION SHELL ═══════════ */
+section{padding:100px 0}
+.wrap{max-width:1200px;margin:0 auto;padding:0 32px}
+.s-tag{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:#64748b;margin-bottom:14px}
+.s-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:clamp(32px,5vw,52px);font-weight:800;letter-spacing:-.04em;line-height:1.05;color:var(--ink);margin-bottom:18px}
+.s-sub{font-size:17px;color:#475569;line-height:1.75;font-weight:400;max-width:600px}
+.red-tx{color:var(--red)}
+.cyber-tx{color:var(--cyber)}
+
+/* Reveal */
+.rv{opacity:0;transform:translateY(36px);transition:opacity .75s cubic-bezier(.16,1,.3,1),transform .75s cubic-bezier(.16,1,.3,1)}
+.rv.on{opacity:1;transform:none}
+.rv-l{opacity:0;transform:translateX(-36px);transition:opacity .75s cubic-bezier(.16,1,.3,1),transform .75s cubic-bezier(.16,1,.3,1)}
+.rv-l.on{opacity:1;transform:none}
+.rv-r{opacity:0;transform:translateX(36px);transition:opacity .75s cubic-bezier(.16,1,.3,1),transform .75s cubic-bezier(.16,1,.3,1)}
+.rv-r.on{opacity:1;transform:none}
+
+/* ═══════════ GLASS CARD ═══════════ */
+.glass{
+  background:rgba(255,255,255,0.55);
+  backdrop-filter:blur(18px) saturate(160%);
+  -webkit-backdrop-filter:blur(18px) saturate(160%);
+  border:1px solid rgba(255,255,255,0.75);
+  box-shadow:0 8px 40px rgba(12,26,53,.06);
+}
+.glass-dark{
+  background:rgba(12,26,53,0.45);
+  backdrop-filter:blur(20px) saturate(160%);
+  -webkit-backdrop-filter:blur(20px) saturate(160%);
+  border:1px solid rgba(255,255,255,0.08);
+  box-shadow:0 8px 40px rgba(0,0,0,.3);
+}
+
+/* ═══════════ WHO NEEDS IT ═══════════ */
+#who{background:#f8fafc}
+.who-grid{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:start;margin-top:56px}
+@media(max-width:768px){.who-grid{grid-template-columns:1fr}}
+.threat-item{
+  display:flex;gap:14px;padding:18px;border-radius:16px;
+  border:1px solid #e2e8f0;background:#fff;
+  transition:all .3s;cursor:default;
+}
+.threat-item:hover{border-color:rgba(239,68,68,.3);transform:translateX(4px);box-shadow:0 0 0 3px rgba(239,68,68,.05)}
+.ti{width:42px;height:42px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px}
+.ti-r{background:rgba(239,68,68,.1)} .ti-c{background:rgba(34,211,238,.1)}
+.ti-y{background:rgba(250,204,21,.1)} .ti-n{background:rgba(12,26,53,.07)}
+.ti-text h4{font-weight:700;font-size:14px;color:var(--ink);margin-bottom:3px}
+.ti-text p{font-size:12px;color:#64748b;line-height:1.55}
+
+.aud-card{
+  padding:24px;border-radius:18px;border:1px solid #e2e8f0;background:#fff;
+  position:relative;overflow:hidden;transition:all .3s;
+}
+.aud-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--red);transition:width .3s}
+.aud-card:hover{border-color:rgba(239,68,68,.2);box-shadow:0 8px 28px rgba(239,68,68,.07)}
+.aud-card:hover::before{width:5px}
+.aud-tag{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:#94a3b8;margin-bottom:8px}
+.aud-card h4{font-weight:700;font-size:17px;color:var(--ink);margin-bottom:5px}
+.aud-card p{font-size:13px;color:#64748b;line-height:1.6}
+
+/* ═══════════ SCAM TYPES ═══════════ */
+#scams{background:#fff}
+.scam-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:56px}
+@media(max-width:900px){.scam-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.scam-grid{grid-template-columns:1fr}}
+.scam-card{
+  background:#fff;border:1px solid #e2e8f0;border-radius:20px;
+  padding:26px;transition:all .35s;position:relative;overflow:hidden;
+}
+.scam-card::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--red),var(--cyber));
+  transform:scaleX(0);transform-origin:left;
+  transition:transform .4s cubic-bezier(.16,1,.3,1);
+}
+.scam-card:hover{transform:translateY(-6px);box-shadow:0 20px 56px rgba(12,26,53,.09)}
+.scam-card:hover::after{transform:scaleX(1)}
+.scam-tag{
+  display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;
+  letter-spacing:.2em;text-transform:uppercase;padding:3px 11px;border-radius:100px;
+  background:rgba(239,68,68,.08);color:var(--red);margin-bottom:12px;
+}
+.scam-card h4{font-weight:700;font-size:17px;color:var(--ink);margin-bottom:7px}
+.scam-card p{font-size:13px;color:#64748b;line-height:1.6;margin-bottom:12px}
+.scam-li{list-style:none;display:flex;flex-direction:column;gap:4px}
+.scam-li li{font-size:11.5px;color:#64748b;padding-left:14px;position:relative}
+.scam-li li::before{content:'→';position:absolute;left:0;color:var(--red);font-size:10px}
+
+/* ═══════════ PROGRAMS ═══════════ */
+#programs{background:#f8fafc}
+.prog-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:56px}
+@media(max-width:900px){.prog-grid{grid-template-columns:1fr}}
+.prog-card{
+  border:1px solid #e2e8f0;border-radius:24px;padding:34px 26px;
+  background:#fff;transition:all .4s;position:relative;overflow:hidden;
+}
+.prog-card:hover{transform:translateY(-8px);box-shadow:0 24px 72px rgba(12,26,53,.11)}
+.prog-card.feat{
+  border-color:var(--red);
+  box-shadow:0 0 0 1px rgba(239,68,68,.18),inset 0 0 60px rgba(239,68,68,.025);
+}
+.prog-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;
+  padding:4px 12px;border-radius:100px;margin-bottom:22px;
+}
+.pb-r{background:rgba(239,68,68,.08);color:var(--red);border:1px solid rgba(239,68,68,.18)}
+.pb-c{background:rgba(34,211,238,.08);color:#0891b2;border:1px solid rgba(34,211,238,.18)}
+.pb-n{background:rgba(12,26,53,.05);color:var(--navy);border:1px solid rgba(12,26,53,.1)}
+.prog-card h3{font-weight:800;font-size:20px;color:var(--ink);margin-bottom:7px;letter-spacing:-.02em}
+.prog-desc{font-size:13px;color:#64748b;line-height:1.65;margin-bottom:22px}
+.price-big{font-family:'Plus Jakarta Sans',sans-serif;font-size:50px;font-weight:800;color:var(--ink);letter-spacing:-.05em;line-height:1}
+.price-big .c{font-size:.48em;vertical-align:top;margin-top:.32em}
+.price-was{font-size:12px;color:#94a3b8;text-decoration:line-through;margin-top:4px;display:block}
+.price-save{display:inline-block;background:rgba(239,68,68,.09);color:var(--red);font-size:10px;font-weight:700;padding:2px 9px;border-radius:100px;margin-top:4px}
+.feat-list{list-style:none;display:flex;flex-direction:column;gap:9px;margin:20px 0 26px}
+.feat-list li{display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--ink)}
+.fk{
+  width:17px;height:17px;border-radius:50%;flex-shrink:0;margin-top:1px;
+  background:rgba(34,211,238,.12);border:1px solid rgba(34,211,238,.25);
+  display:flex;align-items:center;justify-content:center;font-size:8px;color:#0891b2;
+}
+.plat-row{
+  display:flex;align-items:center;gap:7px;margin-top:12px;
+  padding-top:14px;border-top:1px solid #f1f5f9;
+  font-size:11px;color:#94a3b8;
+}
+.plat-chip{
+  display:inline-flex;align-items:center;gap:3px;
+  background:#f8fafc;border:1px solid #e2e8f0;
+  border-radius:6px;padding:3px 9px;font-size:10px;font-weight:600;color:#64748b;
+}
+.enroll-btn{
+  width:100%;padding:13px;
+  background:var(--ink);color:#fff;
+  font-family:'IBM Plex Mono',monospace;font-size:11px;
+  letter-spacing:.1em;text-transform:uppercase;font-weight:700;
+  border:none;border-radius:12px;cursor:pointer;transition:all .3s;
+}
+.enroll-btn:hover{background:var(--red);box-shadow:0 8px 22px rgba(239,68,68,.32)}
+.enroll-btn.navy{background:var(--navy)}
+.enroll-btn.navy:hover{background:#1e3a7c}
+
+/* ═══════════ BUSINESS (dark + wifi ripples) ═══════════ */
+#business{background:var(--navy);position:relative;overflow:hidden}
+.wifi-wave{
+  position:absolute;border:2px solid rgba(34,211,238,.07);
+  border-radius:50%;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  animation:wifi-ripple 10s infinite cubic-bezier(.2,0,.2,1);
+  pointer-events:none;
+}
+.wave-2{animation-delay:3.3s}
+.wave-3{animation-delay:6.6s}
+@keyframes wifi-ripple{
+  0%{width:0;height:0;opacity:0;border-width:5px}
+  10%{opacity:.3}
+  100%{width:180vw;height:180vw;opacity:0;border-width:1px}
+}
+.biz-grid{display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center;position:relative;z-index:2}
+@media(max-width:768px){.biz-grid{grid-template-columns:1fr;gap:48px}}
+.biz-l .s-tag{color:rgba(255,255,255,.35)}
+.biz-l .s-title{color:#fff}
+.biz-l .s-sub{color:rgba(255,255,255,.5)}
+.reason-row{display:flex;gap:14px;padding:18px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.reason-row:last-child{border-bottom:none}
+.rn{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--cyber);min-width:26px;margin-top:1px}
+.rb h5{font-weight:700;font-size:15px;color:#fff;margin-bottom:3px}
+.rb p{font-size:13px;color:rgba(255,255,255,.4);line-height:1.6}
+
+/* Software teaser glass card */
+.sw-teaser{
+  position:relative;z-index:2;
+  margin-top:72px;padding-top:56px;border-top:1px solid rgba(255,255,255,.06);
+}
+.sw-inner{display:grid;grid-template-columns:1fr auto;gap:36px;align-items:center}
+@media(max-width:640px){.sw-inner{grid-template-columns:1fr}}
+.sw-tag{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--cyber);margin-bottom:10px}
+.sw-teaser h3{font-weight:800;font-size:clamp(22px,3.5vw,34px);color:#fff;letter-spacing:-.03em;margin-bottom:10px}
+.sw-teaser p{font-size:13px;color:rgba(255,255,255,.4);line-height:1.7;max-width:560px}
+.btn-sw{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:14px 28px;background:transparent;color:var(--cyber);
+  border:1.5px solid var(--cyber);border-radius:12px;
+  font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;
+  text-decoration:none;white-space:nowrap;transition:all .3s;
+}
+.btn-sw:hover{background:var(--cyber);color:var(--ink)}
+.btn-sw::after{content:'→';transition:transform .22s}
+.btn-sw:hover::after{transform:translateX(4px)}
+
+/* ═══════════ BOYS PROGRAM ═══════════ */
+#boys{background:#f8fafc;position:relative;overflow:hidden}
+/* Wifi ripples lighter version */
+#boys .wifi-wave{border-color:rgba(239,68,68,.06)}
+.boys-grid{display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center}
+@media(max-width:768px){.boys-grid{grid-template-columns:1fr}}
+.boys-vis{
+  position:relative;height:460px;
+  background:linear-gradient(135deg,var(--navy) 0%,#1e3a7c 100%);
+  border-radius:28px;overflow:hidden;
+}
+.boys-vis-grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(34,211,238,.12) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(34,211,238,.12) 1px,transparent 1px);
+  background-size:36px 36px;
+}
+.boys-vis-content{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;padding:36px;text-align:center;
+}
+.boys-big{
+  font-family:'Plus Jakarta Sans',sans-serif;font-size:88px;font-weight:800;
+  color:rgba(255,255,255,.05);line-height:1;margin-bottom:18px;letter-spacing:-.06em;
+}
+.boys-main{font-weight:800;font-size:26px;color:#fff;margin-bottom:7px}
+.boys-sub{font-size:13px;color:rgba(255,255,255,.45);line-height:1.6}
+
+/* Glassmorphism card in boys section */
+.boys-glass{
+  background:rgba(255,255,255,0.12);
+  backdrop-filter:blur(16px) saturate(140%);
+  -webkit-backdrop-filter:blur(16px) saturate(140%);
+  border:1px solid rgba(255,255,255,.22);
+  border-radius:16px;padding:20px;margin-top:24px;
+}
+
+.step-row{display:flex;gap:18px;padding:18px 0;border-bottom:1px solid #e8edf3;position:relative}
+.step-row:last-child{border-bottom:none}
+.step-line{display:flex;flex-direction:column;align-items:center}
+.step-dot{
+  width:34px;height:34px;border-radius:50%;flex-shrink:0;
+  background:var(--navy);display:flex;align-items:center;justify-content:center;
+  font-family:'IBM Plex Mono',monospace;font-size:10px;color:#fff;font-weight:700;
+}
+.step-conn{width:1px;flex:1;background:#e2e8f0;margin:3px 0;min-height:18px}
+.step-body h5{font-weight:700;font-size:15px;color:var(--ink);margin-bottom:3px}
+.step-body p{font-size:12px;color:#64748b;line-height:1.55}
+
+/* ═══════════ PROTECTION ═══════════ */
+#protection{background:#fff;position:relative;overflow:hidden}
+.prot-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:56px}
+@media(max-width:900px){.prot-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:500px){.prot-grid{grid-template-columns:1fr}}
+.prot-card{
+  padding:26px 20px;border-radius:18px;border:1px solid #e2e8f0;
+  text-align:center;transition:all .3s;background:#fff;
+}
+.prot-card:hover{
+  border-color:rgba(34,211,238,.4);
+  box-shadow:0 0 0 3px rgba(34,211,238,.05);
+  transform:translateY(-4px);
+}
+.prot-card h4{font-weight:700;font-size:15px;color:var(--ink);margin:10px 0 5px}
+.prot-card p{font-size:12.5px;color:#64748b;line-height:1.55}
+
+/* ═══════════ CTA BOTTOM ═══════════ */
+#cta{background:var(--ink);position:relative;overflow:hidden;padding:112px 0}
+#cta::before{
+  content:'';position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(34,211,238,.05) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(34,211,238,.05) 1px,transparent 1px);
+  background-size:56px 56px;opacity:.5;
+}
+/* moving light in CTA */
+#cta .cta-spark{
+  position:absolute;width:2px;height:140px;
+  background:linear-gradient(to bottom,transparent,var(--cyber),transparent);
+  top:-140px;left:48%;
+  animation:sweep-v 5s linear infinite;
+  box-shadow:0 0 10px var(--cyber);
+}
+#cta .cta-spark:nth-child(2){left:52%;animation-delay:2.5s}
+@keyframes sweep-v{0%{top:-140px}100%{top:110%}}
+.cta-inner{position:relative;z-index:2;text-align:center}
+.cta-inner .s-tag{color:rgba(255,255,255,.3)}
+.cta-inner .s-title{color:#fff}
+.cta-inner p{font-size:16px;color:rgba(255,255,255,.45);margin-bottom:44px;max-width:460px;margin-left:auto;margin-right:auto;line-height:1.7}
+.cta-call{
+  display:inline-flex;align-items:center;gap:10px;
+  padding:18px 44px;background:var(--red);color:#fff;
+  font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:700;
+  letter-spacing:.05em;text-decoration:none;border-radius:14px;
+  transition:all .3s;box-shadow:0 0 40px rgba(239,68,68,.35);
+}
+.cta-call:hover{background:#dc2626;box-shadow:0 0 60px rgba(239,68,68,.5);transform:scale(1.02)}
+.cta-foot{
+  margin-top:22px;font-family:'IBM Plex Mono',monospace;
+  font-size:11px;color:rgba(255,255,255,.25);
+  display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;
+}
+
+/* ═══════════ FOOTER ═══════════ */
+footer{background:#06091a;padding:44px 0 28px}
+.ft-inner{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:22px}
+.ft-brand .brand{font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:800;color:#fff;letter-spacing:-.02em}
+.ft-brand .red{color:var(--red)}.ft-brand .yellow{color:var(--yellow)}
+.ft-brand .sub{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.25);margin-top:3px}
+.ft-links{display:flex;gap:22px;flex-wrap:wrap}
+.ft-links a{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.25);text-decoration:none;transition:color .2s}
+.ft-links a:hover{color:#fff}
+.ft-copy{font-family:'IBM Plex Mono',monospace;font-size:10px;color:rgba(255,255,255,.16);width:100%;padding-top:22px;border-top:1px solid rgba(255,255,255,.04);margin-top:22px;text-align:center}
+</style>
+</head>
+<body>
+
+<!-- ═══ NAV ═══ -->
+<nav id="site-nav">
+  <a href="#hero" class="logo-slot">
+    <!-- Logo image slot — replace src with actual logo file -->
+    <div class="logo-img flex items-center justify-center">
+      
+         <img alt="Logo" class="logo-img" src="Emergencyweb.png"/>
+      
+    </div>
+    <div>
+      <div class="logo-text"><span class="red">Emergency</span> <span class="yellow">Web</span></div>
+      <div class="logo-sub">CCCE · Cyber Security Education</div>
+    </div>
+  </a>
+  <button class="ham-btn" id="ham-btn" aria-label="Toggle Menu">
+    <div class="ham-line"></div>
+    <div class="ham-line"></div>
+    <div class="ham-line"></div>
+  </button>
+</nav>
+
+<div id="nav-menu">
+  <a href="#who"       class="nav-item">Who Needs Training</a>
+  <a href="#scams"     class="nav-item">Scam Types</a>
+  <a href="#programs"  class="nav-item">Programs & Pricing</a>
+  <a href="#business"  class="nav-item">For Businesses</a>
+  <a href="#boys"      class="nav-item">Emergency Web</a>
+  <a href="#cta"       class="nav-item hi">Get Protected →</a>
+  <span class="nav-phone">630-446-0298</span>
+</div>
+
+<!-- ═══ HERO ═══ -->
+<section id="hero">
+  <div class="hero-env" id="hero-env">
+    <div class="hero-grid"></div>
+    <div class="hero-pcb"></div>
+    <!-- Electricity on grid lines — spawned by JS -->
+    <div id="grid-sparks" style="position:absolute;inset:0;pointer-events:none;overflow:hidden"></div>
+  </div>
+
+  <div class="hero-content">
+    <div class="hero-alert">
+      <span class="alert-dot"></span>
+      Americans 60+ lost $7.7B in 2025 — FBI / AARP
+    </div>
+    <div class="hero-eyebrow">Social Engineering Training & Protection Program</div>
+    <div class="hero-title">
+      <span class="hw" data-g="STOP">STOP</span>
+      <span class="hw" data-g="SCAMS.">SCAMS.</span>
+      <span class="hw" data-g="NOW.">NOW.</span>
+    </div>
+    <p class="hero-sub">Real training for real people — seniors, students, professionals, businesses. Learn to recognize, avoid, and stop attacks before they cost you everything.</p>
+    <div class="hero-cta">
+      <a href="#programs" class="btn-solid">View Programs</a>
+      <a href="tel:6304460298" class="btn-ghost">630-446-0298</a>
+    </div>
+  </div>
+</section>
+
+<div class="e-div"></div>
+
+<!-- ═══ STATS ═══ -->
+<section id="stats" class="p-0 overflow-hidden">
+  <div class="stats-row">
+    <div class="stat-cell rv">
+      <div class="stat-n">$7.7<span class="u">B</span></div>
+      <div class="stat-l">Lost by Americans 60+ in 2025</div>
+      <div class="stat-s">AARP / FBI IC3</div>
+    </div>
+    <div class="stat-cell rv" style="transition-delay:.1s">
+      <div class="stat-n">$21<span class="u">B</span></div>
+      <div class="stat-l">Total Internet Crime Losses</div>
+      <div class="stat-s">FBI IC3 2025 Report</div>
+    </div>
+    <div class="stat-cell rv" style="transition-delay:.2s">
+      <div class="stat-n">$40<span class="u">B+</span></div>
+      <div class="stat-l">Estimated Total Societal Losses</div>
+      <div class="stat-s">Including unreported fraud</div>
+    </div>
+    <div class="stat-cell rv" style="transition-delay:.3s">
+      <div class="stat-n">All<span class="u"> Ages</span></div>
+      <div class="stat-l">Targeted — Young to Senior</div>
+      <div class="stat-s">No one is immune</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ WHO NEEDS IT ═══ -->
+<section id="who" class="bg-slate-50">
+  <div class="wrap">
+    <div class="rv">
+      <div class="s-tag">The Threat Is Real</div>
+      <h2 class="s-title">Who Needs <span class="red-tx">Training?</span></h2>
+      <p class="s-sub">Cyber scams impact <strong>everyone</strong> — from 8-year-olds on TikTok to 80-year-olds answering the phone. No age group is safe. No income level is immune.</p>
+    </div>
+    <div class="who-grid">
+      <div class="flex flex-col gap-4 rv-l">
+        <div class="threat-item"><div class="ti ti-r">⚠️</div><div class="ti-text"><h4>Phishing Emails</h4><p>Fake emails impersonating banks, IRS, Amazon — tricking you into giving up credentials.</p></div></div>
+        <div class="threat-item"><div class="ti ti-c">📱</div><div class="ti-text"><h4>Smishing (Text Scams)</h4><p>Fraudulent package alerts, banking warnings, and fake links via SMS targeting smartphones.</p></div></div>
+        <div class="threat-item"><div class="ti ti-y">📞</div><div class="ti-text"><h4>Vishing (Voice Scams)</h4><p>Callers posing as law enforcement, tech support, or government — using fear to steal.</p></div></div>
+        <div class="threat-item"><div class="ti ti-n">🎯</div><div class="ti-text"><h4>Psychological Manipulation</h4><p>Exploiting trust, urgency, fear, and emotion. Social engineering attacks your mind, not software.</p></div></div>
+        <div class="threat-item"><div class="ti ti-r">📩</div><div class="ti-text"><h4>Romance & Emergency Scams</h4><p>Fake relationships and "emergency family" calls designed to drain savings and retirement.</p></div></div>
+      </div>
+      <div class="flex flex-col gap-5 rv-r">
+        <div class="aud-card"><div class="aud-tag">Seniors 60+</div><h4>Most Financially Targeted Group</h4><p>Scammers exploit trust, isolation, and urgency. Our in-person sessions train seniors on their own devices.</p></div>
+        <div class="aud-card"><div class="aud-tag">Young People & Students</div><h4>Targeted Through Social Media</h4><p>Instagram DMs, TikTok giveaways, gaming platforms, mobile messaging — digital awareness starts early.</p></div>
+        <div class="aud-card"><div class="aud-tag">Working Professionals</div><h4>Business Email & Corporate Attacks</h4><p>Spear-phishing, invoice fraud, credential theft. One click can expose an entire organization.</p></div>
+        <div class="aud-card"><div class="aud-tag">Businesses & Organizations</div><h4>Downtime, Legal Costs & Reputation</h4><p>A single attack causes downtime, legal liability, and permanent reputational damage. Prevention is essential.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="e-div"></div>
+
+<!-- ═══ SCAM TYPES ═══ -->
+<section id="scams" class="bg-white">
+  <div class="wrap">
+    <div class="rv">
+      <div class="s-tag">Know Your Enemy</div>
+      <h2 class="s-title">Scams <span class="red-tx">We Train Against</span></h2>
+      <p class="s-sub">Our training covers the full spectrum of social engineering tactics targeting Americans today.</p>
+    </div>
+    <div class="scam-grid">
+      <div class="scam-card rv" style="transition-delay:.05s"><span class="scam-tag">Email</span><h4>Phishing</h4><p>Fake emails impersonating trusted organizations to steal credentials and financial info.</p><ul class="scam-li"><li>Bank account verification</li><li>IRS tax refund notices</li><li>Package delivery alerts</li><li>Password reset requests</li></ul></div>
+      <div class="scam-card rv" style="transition-delay:.1s"><span class="scam-tag">Text / SMS</span><h4>Smishing</h4><p>Text attacks exploiting the trust people place in mobile communications.</p><ul class="scam-li"><li>Fake delivery notices</li><li>Fraudulent banking alerts</li><li>Suspicious account warnings</li><li>Fake verification codes</li></ul></div>
+      <div class="scam-card rv" style="transition-delay:.15s"><span class="scam-tag">Phone Call</span><h4>Vishing</h4><p>Voice calls impersonating institutions to pressure victims into immediate action.</p><ul class="scam-li"><li>Tech support scams</li><li>Government impersonation</li><li>Law enforcement threats</li><li>Investment fraud calls</li></ul></div>
+      <div class="scam-card rv" style="transition-delay:.2s"><span class="scam-tag">Psychological</span><h4>Social Engineering</h4><p>Direct manipulation of trust, fear, urgency, and emotional vulnerability.</p><ul class="scam-li"><li>Emergency family scams</li><li>Romance scams</li><li>Investment fraud</li><li>Charity impersonation</li></ul></div>
+      <div class="scam-card rv" style="transition-delay:.25s"><span class="scam-tag">Financial</span><h4>Financial Fraud</h4><p>Schemes targeting savings, retirement, credit, and digital assets.</p><ul class="scam-li"><li>Wire transfer scams</li><li>Cryptocurrency fraud</li><li>Gift card demands</li><li>Lottery & prize scams</li></ul></div>
+      <div class="scam-card rv" style="transition-delay:.3s"><span class="scam-tag">Corporate</span><h4>Business Attacks</h4><p>Targeted attacks causing downtime, data breaches, and major financial losses.</p><ul class="scam-li"><li>CEO impersonation</li><li>Invoice fraud</li><li>Credential theft</li><li>Ransomware entry points</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PROGRAMS ═══ -->
+<section id="programs" class="bg-slate-50">
+  <div class="wrap">
+    <div class="rv">
+      <div class="s-tag">Training Programs</div>
+      <h2 class="s-title">Choose Your <span class="red-tx">Protection Plan</span></h2> 
+      <p class="s-sub">Delivered live on Webex by Cisco and Google Meet. Real training, real protection, every age group and budget.</p>
+    </div>
+    <div class="prog-grid">
+
+      <!-- In-Person -->
+      <div class="prog-card rv" style="transition-delay:.05s">
+        <div class="prog-badge pb-n">In-Person Session</div>
+        <h3>Personal Training</h3>
+        <p class="prog-desc">One-on-one session using real examples on your own device. We demonstrate how scams work and exactly how to stop them.</p>
+        <div class="mb-5">
+          <div class="price-big"><span class="c">$</span>51</div>
+          <span style="font-size:12px;color:#94a3b8;margin-top:5px;display:block">Per session · per person</span>
+        </div>
+        <ul class="feat-list">
+          <li><span class="fk">✓</span>Live in-person training</li>
+          <li><span class="fk">✓</span>Real examples on your own device</li>
+          <li><span class="fk">✓</span>Hands-on scam recognition practice</li>
+          <li><span class="fk">✓</span>Prevention & response techniques</li>
+          <li><span class="fk">✓</span>All ages, all skill levels</li>
+        </ul>
+        <a 
+  href="https://cal.com/tariq-r/cyber-reservation-session"
+  target="_blank"
+  class="enroll-btn">
+  Book a Session
+</a>
+      </div>
+
+      <!-- Monthly FEATURED -->
+      <div class="prog-card feat rv" style="transition-delay:.1s">
+        <div class="prog-badge pb-r">🔥 Best Value — On Sale</div>
+        <h3>Social Engineering Monthly</h3>
+        <p class="prog-desc">Two live online sessions per week covering social engineering, scam prevention, phishing, smishing, vishing, and daily protection.</p>
+        <div class="mb-5">
+          <div class="price-big"><span class="c">$</span>175</div>
+          <span class="price-was">Regular: $250/month</span>
+          <span class="price-save">Save $75 — Limited Time</span>
+        </div>
+        <ul class="feat-list">
+          <li><span class="fk">✓</span>2 live sessions per week</li>
+          <li><span class="fk">✓</span>Webex by Cisco & Google Meet</li>
+          <li><span class="fk">✓</span>Phishing, smishing & vishing defense</li>
+          <li><span class="fk">✓</span>Psychological manipulation training</li>
+          <li><span class="fk">✓</span>All ages welcome</li>
+          <li><span class="fk">✓</span>Monthly payment convenience</li>
+        </ul>
+        <div class="plat-row"><span>Via:</span><span class="plat-chip">📹 Webex</span><span class="plat-chip">📹 Google Meet</span></div>
+        <button class="enroll-btn mt-4" onclick="location.href='tel:6304460298'">Enroll — $175/mo</button>
+      </div>
+
+      <!-- Cyber Boys -->
+      <div class="prog-card rv" style="transition-delay:.15s">
+        <div class="prog-badge pb-c">Boys Program — Limited</div>
+        <h3>Emergency Web Cyber</h3>
+        <p class="prog-desc">Boys only (currently). Two live sessions per week. A pathway into technology — learn cybersecurity, protect yourself online, explore a tech career.</p>
+        <div class="mb-5">
+          <div class="price-big"><span class="c">$</span>175</div>
+          <span class="price-was">Regular: $250/month</span>
+          <span class="price-save">Save 30% — Enrollment Special</span>
+        </div>
+        <ul class="feat-list">
+          <li><span class="fk">✓</span>2 live sessions per week</li>
+          <li><span class="fk">✓</span>Webex by Cisco & Google Meet</li>
+          <li><span class="fk">✓</span>Intro to cybersecurity concepts</li>
+          <li><span class="fk">✓</span>Scam prevention & digital safety</li>
+          <li><span class="fk">✓</span>Career pathway exploration in tech</li>
+          <li><span class="fk">✓</span>Budget-friendly payment options</li>
+        </ul>
+        <div class="plat-row"><span>Via:</span><span class="plat-chip">📹 Webex</span><span class="plat-chip">📹 Google Meet</span></div>
+        <button class="enroll-btn navy mt-4" onclick="location.href='tel:6304460298'">Apply — Rolling Basis</button>
+        <p style="font-size:10.5px;color:#94a3b8;margin-top:8px;text-align:center;font-family:'IBM Plex Mono',monospace">Spaces limited. Rolling admissions.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="e-div"></div>
+
+<!-- ═══ BUSINESS + SOFTWARE (dark + wifi ripples) ═══ -->
+<section id="business">
+  <!-- Wifi ripples -->
+  <div class="wifi-wave"></div>
+  <div class="wifi-wave wave-2"></div>
+  <div class="wifi-wave wave-3"></div>
+
+  <div class="wrap">
+    <div class="biz-grid">
+      <div class="biz-l rv-l">
+        <div class="logo-img flex items-center justify-center">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M10 2L18 6V10C18 14.418 14.418 18 10 18C5.582 18 2 14.418 2 10V6L10 2Z" stroke="#22d3ee" stroke-width="1.5" fill="none"/>
+        <path d="M7 10L9 12L13 8" stroke="#facc15" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+        <div class="s-tag">For Organizations</div>
+        <h2 class="s-title">Why Businesses Can't Afford to Skip This</h2> 
+
+        <p class="s-sub">Social engineering is the #1 entry point for data breaches. Your firewall doesn't matter if an employee clicks the wrong link.</p>
+      </div>
+      <div class="rv-r">
+        <div>
+          <div class="reason-row"><span class="rn">01</span><div class="rb"><h5>Your Employees Are the Vulnerability</h5><p>98% of cyberattacks rely on social engineering, not technical exploits. The human element is always the weakest link.</p></div></div>
+          <div class="reason-row"><span class="rn">02</span><div class="rb"><h5>The Cost of One Breach Is Catastrophic</h5><p>Downtime, recovery costs, legal exposure, reputational damage. One attack can close a small business permanently.</p></div></div>
+          <div class="reason-row"><span class="rn">03</span><div class="rb"><h5>Compliance & Legal Liability</h5><p>Untrained staff creates liability. Security training demonstrates due diligence and protects your organization legally.</p></div></div>
+          <div class="reason-row"><span class="rn">04</span><div class="rb"><h5>Attackers Are Getting Smarter</h5><p>AI-generated phishing, deepfake voice calls, personalized spear-phishing require equally sophisticated defense.</p></div></div>
+          <div class="reason-row"><span class="rn">05</span><div class="rb"><h5>Client & Partner Trust</h5><p>Proactive security training builds trust with clients in an increasingly digital economy.</p></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Software teaser — glassmorphism card -->
+    <div class="sw-teaser rv">
+      <div class="glass-dark rounded-2xl p-8">
+        <div class="sw-inner">
+          <div>
+            <div class="sw-tag">Software & Web Solutions</div>
+            <h3>Does Your Business Have a Modern Digital Presence?</h3>
+            <p>In today's landscape, a strong web and software foundation is a competitive necessity. Modern businesses need secure, fast, and credible digital platforms to earn client trust, automate operations, and scale safely. A weak or outdated web presence invites both cybercriminals and competitors. We offer web and software development consulting to help businesses build digital infrastructure that grows with them.</p>
+          </div>
+          <a href="https://ccce.netlify.app" target="_blank" class="btn-sw">View Solutions</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ BOYS PROGRAM ═══ -->
+<section id="boys" class="bg-slate-50 relative overflow-hidden">
+  <!-- Light wifi ripple in background -->
+  <div class="wifi-wave"></div>
+  <div class="wifi-wave wave-2"></div>
+
+  <div class="wrap" style="position:relative;z-index:2">
+    <div class="boys-grid">
+      <div class="boys-vis rv-l">
+        <div class="boys-vis-grid"></div>
+        <div class="boys-vis-content">
+          <div class="boys-big">EW</div>
+          <div class="boys-main">Emergency Web</div>
+          <div class="boys-sub">A pathway into technology<br/>for the next generation</div>
+          <!-- Glassmorphism badge -->
+          <div class="glass mt-6 px-5 py-3 rounded-xl text-center" style="border-color:rgba(255,255,255,0.35)">
+            <p style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.6)">Currently enrolling</p>
+            <p style="font-size:13px;color:#fff;font-weight:600;margin-top:4px">Boys Program · 2 Sessions/Week</p>
+          </div>
+        </div>
+      </div>
+      <div class="rv-r">
+        <div class="s-tag" style="color:var(--red)">Boys Program</div>
+        <h2 class="s-title">What Are You Planning<br/><span class="red-tx">After High School?</span></h2>
+        <p class="s-sub">Gap year? College — but what major? Not sure? Emergency Web gives young men a real look at cybersecurity as a career pathway while building essential digital safety skills.</p>
+        <div class="mt-7">
+          <div class="step-row"><div class="step-line"><div class="step-dot">01</div><div class="step-conn"></div></div><div class="step-body ml-4"><h5>Discover Cybersecurity</h5><p>Learn what cybersecurity is — threats, tools, career paths, and why it's the fastest-growing field in tech.</p></div></div>
+          <div class="step-row"><div class="step-line"><div class="step-dot">02</div><div class="step-conn"></div></div><div class="step-body ml-4"><h5>Build Real Digital Safety Skills</h5><p>Two live sessions per week on scams, social engineering, and how to protect yourself and your future clients.</p></div></div>
+          <div class="step-row"><div class="step-line"><div class="step-dot">03</div><div class="step-conn"></div></div><div class="step-body ml-4"><h5>Learn from a Real IT Professional</h5><p>Taught by an experienced IT developer and cybersecurity pro. Real-world knowledge, not textbook theory.</p></div></div>
+          <div class="step-row"><div class="step-line"><div class="step-dot">04</div></div><div class="step-body ml-4"><h5>Find Your Direction</h5><p>College, certification, apprenticeship, or entrepreneurship — find where tech fits in your future.</p></div></div>
+        </div>
+        <!-- Glassmorphism info box -->
+        <div class="glass rounded-2xl p-5 mt-6" style="background:rgba(239,68,68,.04);border-color:rgba(239,68,68,.18)">
+          <p style="font-size:13px;color:#475569;line-height:1.7">
+            <strong style="color:var(--red)">Currently boys only.</strong> Online via Webex & Google Meet.
+            Save 30% on enrollment. Spaces limited — rolling basis.<br/><br/>
+            <strong>Contact:</strong> <a href="tel:6304460298" style="color:var(--red)">630-446-0298</a> or visit <a href="https://ccce.netlify.app" target="_blank" style="color:var(--red)">ccce.netlify.app</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PROTECTION ═══ -->
+<section id="protection" class="bg-white relative overflow-hidden">
+  <div class="wifi-wave" style="border-color:rgba(34,211,238,.05)"></div>
+  <div class="wrap" style="position:relative;z-index:2">
+    <div class="rv text-center">
+      <div class="s-tag">Your Defense Strategy</div>
+      <h2 class="s-title">How to Protect Yourself,<br/>Your Family & Others</h2>
+    </div>
+    <div class="prot-grid">
+      <div class="prot-card rv" style="transition-delay:.05s"><span style="font-size:28px;display:block">📰</span><h4>Stay Informed</h4><p>Learn about the latest scams. Knowledge is your primary defense.</p></div>
+      <div class="prot-card rv" style="transition-delay:.1s"><span style="font-size:28px;display:block">🛑</span><h4>Be Cautious</h4><p>Think before you click, share, or send. Urgency is a manipulation tactic.</p></div>
+      <div class="prot-card rv" style="transition-delay:.15s"><span style="font-size:28px;display:block">🛡️</span><h4>Protect Others</h4><p>Share knowledge with family and coworkers. Help everyone stay safe.</p></div>
+      <div class="prot-card rv" style="transition-delay:.2s"><span style="font-size:28px;display:block">🔐</span><h4>Stay Secure</h4><p>Strong passwords, MFA, updated software — the basics save lives and money.</p></div>
+    </div>
+    <!-- Glassmorphism report banner -->
+    <div class="rv mt-14 glass rounded-2xl p-7 flex items-center justify-between flex-wrap gap-6" style="background:rgba(239,68,68,.04);border-color:rgba(239,68,68,.15)">
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--red);margin-bottom:7px">If You've Been Targeted</div>
+        <p style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px">Experienced a scam or suspicious activity?</p>
+        <p style="font-size:13px;color:#64748b">Fill out the form, report it, or call us. Early action limits the damage.</p>
+      </div>
+      <a href="https://ccce.netlify.app" target="_blank" class="btn-solid">Report / Learn More →</a>
+    </div>
+  </div>
+</section>
+
+<div class="e-div"></div>
+
+<!-- ═══ CTA BOTTOM ═══ -->
+<section id="cta">
+  <div class="cta-spark"></div>
+  <div class="cta-spark"></div>
+  <div class="wrap cta-inner">
+    <div class="s-tag rv">Don't Be a Statistic</div>
+    <h2 class="s-title rv">Be Prepared.<br/><span class="cyber-tx">Be Protected.</span></h2>
+    <p class="rv">Pay a small amount now to learn the mechanisms that protect your cash, your data, and your future. Or wait — and have nothing left to protect.</p>
+    <a href="tel:6304460298" class="cta-call rv">📞 630-446-0298</a>
+    <div class="cta-foot rv">
+      <span>🌐 ccce.netlify.app</span>
+      <span style="opacity:.2">·</span>
+      <span>📹 Webex by Cisco</span>
+      <span style="opacity:.2">·</span>
+      <span>📹 Google Meet</span>
+      <span style="opacity:.2">·</span>
+      <span>✅ Your Awareness. Your Protection. Your Future.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+  <div class="wrap ft-inner">
+    <div class="ft-brand">
+      <div class="brand"><span class="red">Emergency</span> <span class="yellow">Web</span></div>
+      <div class="sub">CCCE · Social Engineering Training</div>
+    </div>
+    <div class="ft-links">
+      <a href="#who">Training</a>
+      <a href="#programs">Programs</a>
+      <a href="#business">Business</a>
+      <a href="#boys">Emergency Web</a>
+      <a href="https://ccce.netlify.app">Software</a>
+    </div>
+  </div>
+  <div class="wrap ft-copy">© 2025 CCCE — Cyber Crimes Community Education · 630-446-0298 · ccce.netlify.app</div>
+</footer>
+
+<script>
+// ── Nav scroll ──
+window.addEventListener('scroll', () => {
+  document.getElementById('site-nav').classList.toggle('scrolled', window.scrollY > 40);
+});
+
+// ── Hamburger ──
+const hamBtn  = document.getElementById('ham-btn');
+const navMenu = document.getElementById('nav-menu');
+hamBtn.addEventListener('click', () => {
+  hamBtn.classList.toggle('open');
+  navMenu.classList.toggle('open');
+  document.body.style.overflow = navMenu.classList.contains('open') ? 'hidden' : '';
+});
+navMenu.querySelectorAll('.nav-item').forEach(l => l.addEventListener('click', () => {
+  hamBtn.classList.remove('open');
+  navMenu.classList.remove('open');
+  document.body.style.overflow = '';
+}));
+
+// ── Hero parallax ──
+const heroEnv = document.getElementById('hero-env');
+document.addEventListener('mousemove', e => {
+  const x = (e.clientX / window.innerWidth)  - 0.5;
+  const y = (e.clientY / window.innerHeight) - 0.5;
+  if (heroEnv) heroEnv.style.transform = `rotateX(${60 + y * 12}deg) rotateZ(${x * 9}deg)`;
+});
+
+// ── ELECTRICITY ON GRID LINES ──
+// Sparks travel strictly along grid lines (horizontal or vertical)
+const GRID_SIZE = 64; // px — matches background-size in hero-grid
+const sparksEl  = document.getElementById('grid-sparks');
+
+function spawnGridSpark() {
+  const spark = document.createElement('div');
+  spark.classList.add('grid-spark');
+
+  const heroH = window.innerHeight;
+  const heroW = window.innerWidth;
+
+  // Snap to a grid line
+  const horizontal = Math.random() > 0.5;
+  // random color: cyan, yellow, red
+  const colors = ['#22d3ee', '#facc15', '#ef4444'];
+  const col = colors[Math.floor(Math.random() * colors.length)];
+  spark.style.setProperty('--cyan', col);
+  spark.style.background = col;
+  spark.style.boxShadow  = `0 0 6px 3px ${col}`;
+
+  let sx, sy, ex, ey;
+  if (horizontal) {
+    // snap to nearest grid row
+    const row   = Math.floor(Math.random() * Math.ceil(heroH / GRID_SIZE)) * GRID_SIZE;
+    const start = Math.random() > 0.5 ? -10 : heroW + 10;
+    const end   = start < 0 ? heroW + 10 : -10;
+    sx = `${start}px`; sy = `${row}px`;
+    ex = `${end}px`;   ey = `${row}px`;
+  } else {
+    // snap to nearest grid column
+    const col2  = Math.floor(Math.random() * Math.ceil(heroW / GRID_SIZE)) * GRID_SIZE;
+    const start = Math.random() > 0.5 ? -10 : heroH + 10;
+    const end   = start < 0 ? heroH + 10 : -10;
+    sx = `${col2}px`; sy = `${start}px`;
+    ex = `${col2}px`; ey = `${end}px`;
+  }
+
+  const dur   = 1.5 + Math.random() * 2.5;
+  const delay = Math.random() * 1.5;
+
+  spark.style.cssText += `
+    --sx:${sx};--sy:${sy};--ex:${ex};--ey:${ey};
+    --sd:${dur}s;--sdelay:${delay}s;
+    left:0;top:0;
+  `;
+  sparksEl.appendChild(spark);
+  setTimeout(() => spark.remove(), (dur + delay + 0.5) * 1000);
+}
+
+setInterval(spawnGridSpark, 280);
+
+// ── Scroll reveal ──
+const ro = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const d = parseFloat(e.target.style.transitionDelay || '0') * 1000;
+      setTimeout(() => e.target.classList.add('on'), d || 0);
+      ro.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.09 });
+
+document.querySelectorAll('.rv,.rv-l,.rv-r').forEach(el => ro.observe(el));
+</script>
+</body>
+</html>
